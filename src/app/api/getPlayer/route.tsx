@@ -11,8 +11,8 @@ export async function GET(request: Request) {
     
     try{
         const {body} = await request.json();
-        const gameName = body.gameName;
-        const tagLine = body.tagLine;
+        const InputGameName = body.gameName;
+        const InputTagLine = body.tagLine;
 
         const externalUrl = process.env.RIOT_API_URL;
         const apiKey = process.env.RIOT_API_KEY;
@@ -20,27 +20,26 @@ export async function GET(request: Request) {
 
 
 
-        if (!gameName || !tagLine) {
+        if (!InputGameName || !InputTagLine) {
             return NextResponse.json({ error: 'Game name and player name are required' }), {
                 status: 400,
                 headers: responseHeaders,
             };
         }
-        else if (isNaN(gameName) || isNaN(tagLine)) {
+        else if (isNaN(InputGameName) || isNaN(InputTagLine)) {
             return NextResponse.json({ error: 'Game name and player name must be strings' }), {
                 status: 400,
                 headers: responseHeaders,
             };
         }
 
-        // Check if the player exists in the database, and if so, return the cached data
+        // Check if the player exists in the database, and if so, return that player's data
         const player = await prisma.player.findUnique({
             where: {
-                gameName: gameName,
-                tagLine: tagLine,
+                gameName: InputGameName,
+                tagLine: InputTagLine,
             },
         });
-
         if (player) {
             return NextResponse.json(player, {
                 status: 200,
@@ -48,16 +47,17 @@ export async function GET(request: Request) {
             });
         }
     
-
+        // Sanity check for environment variables
         if (!externalUrl || !apiKey) {
             return new Response(JSON.stringify({ error: 'External URL or API key is missing' }), {
                 status: 500,
                 headers: responseHeaders,
             });
         }
-
+        // Get URL from environment variables
         const url = `${externalUrl}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`;
 
+        // Set up request options
         const requestOptions = {
             method: 'GET',
             headers: {
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
             },
         }
 
-
+        // Send request to Riot API
         const apiResponse = await fetch(url, requestOptions); 
         if (!apiResponse.ok) {
             return new Response(JSON.stringify({ error: 'Failed to fetch data from the external API' }), {
@@ -75,10 +75,12 @@ export async function GET(request: Request) {
             });
         }
         const apiResponseData = await apiResponse.json();
-        let playerId = apiResponseData.puuid;
+        let playerId = apiResponseData.PUUID;
         let playerName = apiResponseData.gameName;
         let playerTagLine = apiResponseData.tagLine;
 
+
+        // Attempt to create a new player in the database
         try{
             const newPlayer = prisma.player.create({
                 data: {
@@ -88,6 +90,7 @@ export async function GET(request: Request) {
                 },
 
             })
+        // Check if the player was created successfully
             if (!newPlayer) {
                 return NextResponse.json({ error: 'Failed to create player in the database' }), {
                     status: 500,
@@ -103,20 +106,10 @@ export async function GET(request: Request) {
                 headers: responseHeaders,
             }   ;
         }
-
-        
-
-
-
+        // Return RIOT API response: PUIID, GameName, TagLine
         return NextResponse.json(apiResponseData, {
             status: 200});
-
-
-
-
-
     }
-
     catch (error){
         console.error('Error:', error);
         return NextResponse.json({ error: 'An error occurred while processing the request' }), {
