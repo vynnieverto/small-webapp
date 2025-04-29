@@ -3,7 +3,7 @@ import {PrismaClient} from '@prisma/client';
 
 
 const prisma = new PrismaClient();
-export async function GET(request: Request) {
+export async function POST(request: Request) {
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
@@ -11,22 +11,22 @@ export async function GET(request: Request) {
     
     try{
         const {body} = await request.json();
-        const InputGameName = body.gameName;
-        const InputTagLine = body.tagLine;
+        const inputGameName = body.gameName;
+        const inputTagLine = body.tagLine;
+        const inputRegion = body.region;
 
-        const externalUrl = process.env.RIOT_API_URL;
         const apiKey = process.env.RIOT_API_KEY;
 
 
 
 
-        if (!InputGameName || !InputTagLine) {
+        if (!inputGameName || !inputTagLine) {
             return NextResponse.json({ error: 'Game name and player name are required' }), {
                 status: 400,
                 headers: responseHeaders,
             };
         }
-        else if (isNaN(InputGameName) || isNaN(InputTagLine)) {
+        else if (isNaN(inputGameName) || isNaN(inputTagLine)) {
             return NextResponse.json({ error: 'Game name and player name must be strings' }), {
                 status: 400,
                 headers: responseHeaders,
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
         // Check if the player exists in the database, and if so, return that player's data
         const player = await prisma.player.findUnique({
             where: {
-                gameName: InputGameName,
-                tagLine: InputTagLine,
+                gameName: inputGameName,
+                tagLine: inputTagLine,
             },
         });
         if (player) {
@@ -48,14 +48,14 @@ export async function GET(request: Request) {
         }
     
         // Sanity check for environment variables
-        if (!externalUrl || !apiKey) {
-            return new Response(JSON.stringify({ error: 'External URL or API key is missing' }), {
+        if (!apiKey) {
+            return new Response(JSON.stringify({ error: 'API key is missing' }), {
                 status: 500,
                 headers: responseHeaders,
             });
         }
         // Get URL from environment variables
-        const url = `${externalUrl}/riot/account/v1/accounts/by-riot-id/${InputGameName}/${InputTagLine}`;
+        const url = `https://${inputRegion}/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
 
         // Set up request options
         const requestOptions = {
