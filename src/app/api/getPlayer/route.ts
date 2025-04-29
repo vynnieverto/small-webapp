@@ -55,7 +55,7 @@ export async function GET(request: Request) {
             });
         }
         // Get URL from environment variables
-        const url = `${externalUrl}/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`;
+        const url = `${externalUrl}/riot/account/v1/accounts/by-riot-id/${InputGameName}/${InputTagLine}`;
 
         // Set up request options
         const requestOptions = {
