@@ -89,19 +89,19 @@ export async function GET(request: Request) {
 
             })
             if (!newPlayer) {
-                return new Response(JSON.stringify({ error: 'Failed to create player in the database' }), {
+                return NextResponse.json({ error: 'Failed to create player in the database' }), {
                     status: 500,
                     headers: responseHeaders,
-                });
+                };
             }
             console.log('Player created:', newPlayer);
 
         } catch (error) {
             console.error('Error creating player:', error);
-            return new Response(JSON.stringify({ error: 'Failed to create player in the database' }), {
+            return NextResponse.json({ error: 'Failed to create player in the database' }), {
                 status: 500,
                 headers: responseHeaders,
-            });
+            }   ;
         }
 
         
@@ -119,10 +119,10 @@ export async function GET(request: Request) {
 
     catch (error){
         console.error('Error:', error);
-        return new Response(JSON.stringify({ error: 'An error occurred while processing the request' }), {
+        return NextResponse.json({ error: 'An error occurred while processing the request' }), {
             status: 500,
             headers: responseHeaders,
-        });
+        };
     }
 
 }
