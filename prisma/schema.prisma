@@ -18,5 +18,20 @@ model Player {
   PUIID       String @id
   Username    String 
   Tag         String
+  Matches      Match[] 
+}
+
+
+model Match {
+  ID         String @id
+  Result    String
+  StartTime  DateTime @default(now())
+  Duration  Int
+  GameMode  String
+  MapID     Int
+  GameType  String
+
+  Participants   Player[]
+
 }
 
