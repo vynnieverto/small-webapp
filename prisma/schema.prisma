@@ -18,7 +18,10 @@ model Player {
   PUIID       String @id
   Username    String 
   Tag         String
-  Matches      Match[] 
+  Matches     Match[]
+  Region      String
+  Mastery    Mastery[]
+  @@unique([Username, Tag])
 }
 
 
@@ -32,6 +35,15 @@ model Match {
   GameType  String
 
   Participants   Player[]
-
 }
 
+model Mastery {
+  championId            Int
+  playerId              String 
+  championLevel         Int
+  championPoints        Int
+  totalLevelPoints      Int
+  pointsUntilNextLevel  Int
+  @@id([championId, playerId])
+  Player Player @relation(fields: [playerId], references: [PUIID])
+}
