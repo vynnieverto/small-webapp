@@ -130,7 +130,7 @@ export async function POST(request: Request) {
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
     const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
-    const apiKey = process.env.RIOT_API_KEY;
+    const apiKey = process.env.RIOT_API_KEY!;
     const requestOptions = {
         method: 'GET',
         headers: {
