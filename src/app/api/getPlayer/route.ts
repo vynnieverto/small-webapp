@@ -122,8 +122,36 @@ export async function POST(request: Request) {
 
 
 // hopefully this isn't necessary
+
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
-    
+    const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
+    const apiKey = process.env.RIOT_API_KEY;
+    const requestOptions = {
+        method: 'GET',
+        headers: {
+            'X-Riot-Token': apiKey,
+            'Content-Type': 'application/json',
+        },
+    };
+    try {
+        const apiResponse = await fetch(url, requestOptions);
+        if (!apiResponse.ok){
+            return null;
+        }
+        const apiResponseData = await apiResponse.json();
+
+        if (!apiResponseData || apiResponseData.length === 0) {
+            return null;
+        }
+        const matchId = apiResponseData[0];
+        const region = matchId.split('_')[0];
+        return region;
+        
+    } catch (error) {
+        console.error('Error fetching player region:', error);
+        return null;
+    }
+
 
 }

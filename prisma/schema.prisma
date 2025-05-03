@@ -19,7 +19,7 @@ model Player {
   Username    String 
   Tag         String
   Matches     Match[]
-  Region      String
+  Region      String? 
   Mastery    Mastery[]
   @@unique([Username, Tag])
 }
