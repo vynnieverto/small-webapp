@@ -5,6 +5,7 @@ import {PrismaClient} from '@prisma/client';
 // Perhaps we should just return a 404 error?
 
 // TODO: Unit tests for this endpoint.
+// Note: One typescript error is caused by the APIKEY being string | undefined, which was causing typescript to throw errors. It shows itself in the requestHeaders variable. 
 const prisma = new PrismaClient();
 export async function POST(request: Request) {
     const responseHeaders = {

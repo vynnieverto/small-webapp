@@ -99,22 +99,6 @@ export async function GET(request: Request, {params}: {params: {player: string}}
                 headers: responseHeaders,
             });
         }
-
-        // const playerMastery = findAllPlayerMastery.map((mastery) => ({
-        //     championId: mastery.championId,
-        //     championLevel: mastery.championLevel,
-        //     championPoints: mastery.championPoints,
-        //     lastPlayTime: mastery.lastPlayTime,
-        // }));
-
-
-
-
-        
-        
-
-
-
     } catch (error) {
         console.error('Error fetching mastery data:', error);
         return NextResponse.json({ error: 'Internal server error' }, {
