@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import {PrismaClient} from '@prisma/client';
 
+// TODO: Figure out what to do if a player has no games played. Note: This means that the player has no mastery data, no match history, etc. 
+// Perhaps we should just return a 404 error?
 
+// TODO: Unit tests for this endpoint.
 const prisma = new PrismaClient();
 export async function POST(request: Request) {
     const responseHeaders = {
@@ -122,6 +125,7 @@ export async function POST(request: Request) {
 
 
 // hopefully this isn't necessary
+// The main idea is to query the players match history and get the region from the match ID, since querying player information doesn't return the region
 
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
