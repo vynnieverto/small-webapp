@@ -41,6 +41,7 @@ export async function GET(request: Request, {params}: {params: {player: string}}
 
         if (!findAllPlayerMastery) {
             
+            
         }
 
         // const playerMastery = findAllPlayerMastery.map((mastery) => ({
