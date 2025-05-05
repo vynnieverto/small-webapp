@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // This is a placeholder, but its final functionality will be to get the IDs of the last 20 matches played by the queried player
-export default function GET(request: Request){
+export default async function GET(request: Request, {params}: {params: {player: string}}) {
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
