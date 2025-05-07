@@ -5,7 +5,7 @@ const request = require('supertest');
 const BASE_URL = 'http://localhost:3000'; 
 
 
-describe('API Tests', () => {
+describe('getPlayer unit tests', () => {
     const PUUID1 = null; // Initialize PUUID variable
     const tagLine1 = 'GLHF'; // 
     const gameName1 = 'CorruptCosmonaut'; // 
@@ -21,7 +21,7 @@ describe('API Tests', () => {
 
 
     
-    describe('POST /api/getPlayer', () =>{
+    describe('POST /api/getPlayer with already queried player', () =>{
         it('should return existing player data', async () => {
             const response = await request(BASE_URL)
                 .post('/api/getPlayer')
@@ -51,6 +51,104 @@ describe('API Tests', () => {
         });
     });
 
+    describe('POST /api/getPlayer with no data', () => {
+        it('should return an error for empty player data', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({ gameName: '', tagLine: '', region: 'americas' });
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    describe('POST /api/getPlayer with missing data', () => {
+        it('should return an error for invalid player data', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({ gameName: '2', tagLine: '1' });
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    describe('POST /api/getPlayer with invalid region', () => {
+        it('should return an error for invalid region', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({ gameName: gameName1, tagLine: tagLine1, region: 'invalidRegion' });
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    describe('POST /api/getPlayer with no game name', () => {
+        it('should return an error for invalid game name', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({ gameName: '', tagLine: tagLine1, region: 'americas' });
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    describe('POST /api/getPlayer with no tag line', () => {
+        it('should return an error for invalid tag line', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({ gameName: gameName1, tagLine: '', region: 'americas' });
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    describe('POST /api/getPlayer with no data', () => {
+        it('should return an error for invalid region', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/getPlayer')
+                .send({});
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+
+});
+
+
+describe('[player]/Mastery unit tests', () => {
+    const PUUID1 = null; // Initialize PUUID variable
+    const tagLine1 = 'GLHF'; // 
+    const gameName1 = 'CorruptCosmonaut'; // 
+
+    beforeAll(async () => {
+        // intialize the database with a player
+        await request(BASE_URL).post('api/getPlayer').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+        await request(BASE_URL).post('api/RocketEscape#GLHF/Mastery').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+
+
+    });
+
+
+    describe('POST /api/player/mastery with already queried player', () =>{
+        it('should return existing player data', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/RocketEscape#GLHF/Mastery')
+                .send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: 'americas' }); // Replace with actual PUUID for testing
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('playerData');
+            expect(response.body.playerData).toHaveProperty('gameName', 'RocketEscape');
+            expect(response.body.playerData).toHaveProperty('tagLine', 'GLHF');
+            expect(response.body.playerData).toHaveProperty('puuid', 'JVoi3ouOBbEKAq8br-HQ5twNfppvUydFQQPZMmfM0hZPUSeplHRpgoqUhxg8lfIvlh3QzoVKFzILig');
+
+        });
+    });
 
 });
 
