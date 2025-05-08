@@ -167,3 +167,22 @@ describe('[player]/Mastery unit tests', () => {
 
 });
 
+
+
+
+describe('[player]/MatchHistory unit tests', () => {
+    const PUUID1 = null; // Initialize PUUID variable
+    const tagLine1 = 'GLHF'; // 
+    const gameName1 = 'CorruptCosmonaut'; // 
+
+    beforeAll(async () => {
+        // intialize the database with a player
+        await request(BASE_URL).post('api/getPlayer').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+        await request(BASE_URL).get('api/RocketEscape#GLHF/MatchHistory').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+        await request(BASE_URL).post('api/getPlayer').send({ gameName: gameName1, tagLine: tagLine1, region: 'americas' })
+
+
+    });
+
+});
+
