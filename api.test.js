@@ -129,13 +129,14 @@ describe('[player]/Mastery unit tests', () => {
     beforeAll(async () => {
         // intialize the database with a player
         await request(BASE_URL).post('api/getPlayer').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
-        await request(BASE_URL).post('api/RocketEscape#GLHF/Mastery').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+        await request(BASE_URL).get('api/RocketEscape#GLHF/Mastery').send({ gameName: 'RocketEscape', tagLine: 'GLHF', region: americas })
+        await request(BASE_URL).post('api/getPlayer').send({ gameName: gameName1, tagLine: tagLine1, region: 'americas' })
 
 
     });
 
 
-    describe('POST /api/player/mastery with already queried player', () =>{
+    describe('GET /api/player/mastery with already queried player', () =>{
         it('should return existing player data', async () => {
             const response = await request(BASE_URL)
                 .post('/api/RocketEscape#GLHF/Mastery')
@@ -147,6 +148,20 @@ describe('[player]/Mastery unit tests', () => {
             expect(response.body.playerData).toHaveProperty('tagLine', 'GLHF');
             expect(response.body.playerData).toHaveProperty('puuid', 'JVoi3ouOBbEKAq8br-HQ5twNfppvUydFQQPZMmfM0hZPUSeplHRpgoqUhxg8lfIvlh3QzoVKFzILig');
 
+        });
+    });
+
+    describe('GET /api/player/mastery with no saved mastery data', () => {
+        it('should query the riot api and return the data', async () => {
+            const response = await request(BASE_URL)
+                .post('/api/RocketEscape#GLHF/Mastery')
+                .send({ gameName: gameName1, tagLine: tagLine1, region: 'americas' });
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('playerData');
+            expect(response.body.playerData).toHaveProperty('gameName', gameName1);
+            expect(response.body.playerData).toHaveProperty('tagLine', tagLine1);
+            expect(response.body.playerData).toHaveProperty('puuid', 'zHmeb_JI_l_TtkISS6y92WBWscwyS4ozF_FR8oR6rqN2iBJtN4FmeoBnsfdxOjSzvJ9AcNRiXZNWsw'); // Check if PUUID is present
         });
     });
 
