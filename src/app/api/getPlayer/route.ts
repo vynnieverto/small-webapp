@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import {PrismaClient} from '@prisma/client';
+import { get } from "http";
 
 // TODO: Figure out what to do if a player has no games played. Note: This means that the player has no mastery data, no match history, etc. 
 // Perhaps we should just return a 404 error?
@@ -115,6 +116,16 @@ export async function POST(request: Request) {
         let playerId = apiResponseData.puuid;
         let playerName = apiResponseData.gameName;
         let playerTagLine = apiResponseData.tagLine;
+        let playerRegion = await getPlayerRegion(playerId, inputRegion);
+        
+
+        // TODO: There could be a better way to do this. Will come back to this later.
+        if (!playerRegion) {
+            return NextResponse.json({ error: 'Failed to fetch player region' }, {
+                status: 500,
+                headers: responseHeaders,
+            });
+        }
 
 
         // Attempt to create a new player in the database
@@ -124,6 +135,7 @@ export async function POST(request: Request) {
                     puuid: playerId,
                     gameName: playerName,
                     tagLine: playerTagLine,
+                    Region: playerRegion,
                 },
 
             })
@@ -144,7 +156,7 @@ export async function POST(request: Request) {
             } ;
         }
         // Return RIOT API response: PUIID, GameName, TagLine
-        return NextResponse.json({playerData: {PUUID: playerId, gameName: playerName, tagLine: playerTagLine}}, {
+        return NextResponse.json({playerData: {puuid: playerId, gameName: playerName, tagLine: playerTagLine, region: playerRegion}}, {
             status: 200});
     }
     catch (error){
@@ -164,7 +176,7 @@ export async function POST(request: Request) {
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
     const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
-    const apiKey = process.env.RIOT_API_KEY!;
+    let apiKey = process.env.RIOT_API_KEY!;
     const requestOptions = {
         method: 'GET',
         headers: {
@@ -184,7 +196,7 @@ async function getPlayerRegion(playerId: string, hemisphere: string){
         }
         const matchId = apiResponseData[0];
         const region = matchId.split('_')[0];
-        return region;
+        return region.toLowerCase();
         
     } catch (error) {
         console.error('Error fetching player region:', error);

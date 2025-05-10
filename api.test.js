@@ -48,6 +48,7 @@ describe('getPlayer unit tests', () => {
             expect(response.body.playerData).toHaveProperty('gameName', gameName1);
             expect(response.body.playerData).toHaveProperty('tagLine', tagLine1);
             expect(response.body.playerData).toHaveProperty('puuid', 'zHmeb_JI_l_TtkISS6y92WBWscwyS4ozF_FR8oR6rqN2iBJtN4FmeoBnsfdxOjSzvJ9AcNRiXZNWsw'); // Check if PUUID is present
+            expect(response.body.playerData).toHaveProperty('region', 'na1'); // Check if region is present
         });
     });
 
