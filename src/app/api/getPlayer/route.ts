@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
 
         // check if the input is valid. 
-        // Note: How much should I  care about sql injection?
+        // Note: How much should I care about sql injection?
         if (!inputGameName || !inputTagLine) {
             return NextResponse.json({ error: 'Game name and player name are required'}, {
                 status: 400,
@@ -147,6 +147,8 @@ export async function POST(request: Request) {
                 };
             }
             console.log('Player created:', newPlayer);
+            return NextResponse.json({playerData: newPlayer}, {
+                status: 200});
 
         } catch (error) {
             console.error('Error creating player:', error);
@@ -156,8 +158,8 @@ export async function POST(request: Request) {
             } ;
         }
         // Return RIOT API response: PUIID, GameName, TagLine
-        return NextResponse.json({playerData: {puuid: playerId, gameName: playerName, tagLine: playerTagLine, region: playerRegion}}, {
-            status: 200});
+        // Note: The region is not returned from the API, so we need to get it from the match history.
+
     }
     catch (error){
         console.error('Error:', error);

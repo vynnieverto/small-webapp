@@ -14,18 +14,22 @@ export async function GET(request: Request, {params}: {params: {player: string}}
     };
     try{
         // Get the player ID from the request parameters
-        const riotId = params.player;
-        const [gameName, tagLine] = riotId.split('#');
-
+        
+        let { player } = params;
+        const [gameName, tagLine] = player.split('-');
+        console.log('Game name:', gameName);
+        console.log('Tag line:', tagLine);
         // Query the database for the player using the provided gameName and tagLine
-        const player = await prisma.player.findUnique({
+        const playerData = await prisma.player.findUnique({
             where: {
-                gameName: gameName,
-                tagLine: tagLine,
-            },
+                gameName_tagLine: {
+                    gameName: gameName,
+                    tagLine: tagLine,
+                },
+            }
         });
 
-        if (!player) {
+        if (!playerData) {
             return NextResponse.json({ error: 'Player not found' }, {
                 status: 404,
                 headers: responseHeaders,
@@ -33,9 +37,9 @@ export async function GET(request: Request, {params}: {params: {player: string}}
         }
 
         // Check if the player has mastery data in the database
-        const findAllPlayerMastery = await prisma.playerMastery.findMany({
+        const findAllPlayerMastery = await prisma.mastery.findMany({
             where: {
-                playerId: player.id,
+                playerId: playerData.puuid,
             },
             select: {
                 championId: true,
@@ -46,16 +50,16 @@ export async function GET(request: Request, {params}: {params: {player: string}}
             }
         });
 
-        if (!findAllPlayerMastery) {
+        if (findAllPlayerMastery.length === 0) {
             // If no mastery data is found, attempt to fetch it from the API
             const apiKey = process.env.RIOT_API_KEY!;
-            const region = player.region;
-            const url = `https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-player/${player.puuid}`;
+            const region = playerData.Region;
+            const url = `https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${playerData.puuid}`;
             const requestOptions: RequestInit = {
                 method: 'GET',
                 headers: {
                     'X-Riot-Token': apiKey,
-                    'Content-Type': 'application/json',
+
                 },
             };
             const response = await fetch(url, requestOptions);
@@ -70,15 +74,14 @@ export async function GET(request: Request, {params}: {params: {player: string}}
             // Save the mastery data to the database
             const playerMasteryData = masteryData.map((mastery: any) => ({
                 championId: mastery.championId,
-                playerId: player.id,
+                playerId: playerData.puuid,
                 championLevel: mastery.championLevel,
                 championPoints: mastery.championPoints,
                 totalLevelPoints: mastery.championPointsUntilNextLevel + mastery.championPointsSinceLastLevel,
                 pointsUntilNextLevel: mastery.championPointsUntilNextLevel,
-                lastPlayTime: mastery.lastPlayTime,
             }));
 
-            const temp = await prisma.playerMastery.createMany({
+            const temp = await prisma.mastery.createMany({
                 data: playerMasteryData,
             });
             if (!temp) {
