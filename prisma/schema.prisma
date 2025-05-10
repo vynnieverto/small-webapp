@@ -6,22 +6,20 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
-
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Player {
-  PUIID       String @id
-  Username    String 
-  Tag         String
+  puuid       String @id
+  gameName    String 
+  tagLine         String
   Matches     Match[]
   Region      String? 
   Mastery    Mastery[]
-  @@unique([Username, Tag])
+  @@unique([gameName, tagLine])
 }
 
 
@@ -45,5 +43,5 @@ model Mastery {
   totalLevelPoints      Int
   pointsUntilNextLevel  Int
   @@id([championId, playerId])
-  Player Player @relation(fields: [playerId], references: [PUIID])
+  Player Player @relation(fields: [playerId], references: [puuid])
 }
