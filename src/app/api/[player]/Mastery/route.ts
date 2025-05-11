@@ -12,6 +12,7 @@ export async function GET(request: Request, {params}: {params: {player: string}}
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
+    const validRegions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'me1', 'na1', 'oc1', 'ru', 'sg2', 'tr1', 'tw2', 'vn2'];
     try{
         // Get the player ID from the request parameters
         
@@ -54,6 +55,13 @@ export async function GET(request: Request, {params}: {params: {player: string}}
             // If no mastery data is found, attempt to fetch it from the API
             const apiKey = process.env.RIOT_API_KEY!;
             const region = playerData.Region;
+            if (!region || !validRegions.includes(region)) {
+                return NextResponse.json({ error: 'Invalid region' }, {
+                    status: 400,
+                    headers: responseHeaders,
+                });
+            }
+            
             const url = `https://${region}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${playerData.puuid}`;
             const requestOptions: RequestInit = {
                 method: 'GET',

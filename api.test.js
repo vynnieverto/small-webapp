@@ -168,6 +168,18 @@ describe('[player]/Mastery unit tests', () => {
         });
     });
 
+    describe('GET /api/player/mastery with no saved player data', () => {
+        it('should return an error for player data', async () => {
+            const response = await request(BASE_URL)
+                .get('/api/AloisNL-EUW/Mastery')
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+    
+
 });
 
 
