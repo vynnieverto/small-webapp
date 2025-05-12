@@ -22,7 +22,7 @@ model Player {
   @@unique([gameName, tagLine])
 }
 
-
+// May need to make changes to this model
 model Match {
   ID         String @id
   Result    String
