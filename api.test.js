@@ -168,10 +168,21 @@ describe('[player]/Mastery unit tests', () => {
         });
     });
 
-    describe('GET /api/player/mastery with no saved player data', () => {
+    describe('GET /api/player/mastery with a player not in the db saved player', () => {
         it('should return an error for player data', async () => {
             const response = await request(BASE_URL)
                 .get('/api/AloisNL-EUW/Mastery')
+            
+            expect(response.status).toBe(400); // Assuming 400 for bad request
+            expect(response.body).toHaveProperty('error');
+        });
+    });
+
+
+    describe('GET /api/player/mastery with no region', () => {
+        it('should return an error for invalid region', async () => {
+            const response = await request(BASE_URL)
+                .get('/api/RocketEscape-GLHF/Mastery')
             
             expect(response.status).toBe(400); // Assuming 400 for bad request
             expect(response.body).toHaveProperty('error');
