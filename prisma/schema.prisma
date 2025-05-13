@@ -12,11 +12,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  TOP
+  JUNGLE
+  MID
+  BOT
+  SUPPORT
+}
+
+enum ObjectiveType {
+  DRAGON
+  BARON
+  RIFT
+  TOWER
+  INHIBITOR
+  VOIDGRUBS
+}
+
 model Player {
   puuid       String @id
   gameName    String 
   tagLine         String
-  Matches     Match[]
+  Participant Participant[]
   Region      String? 
   Mastery    Mastery[]
   @@unique([gameName, tagLine])
@@ -24,15 +41,44 @@ model Player {
 
 // May need to make changes to this model
 model Match {
-  ID         String @id
-  Result    String
+  MatchId         String @id
   StartTime  DateTime @default(now())
   Duration  Int
   GameMode  String
   MapID     Int
   GameType  String
 
-  Participants   Player[]
+  Participants Participant[]
+  Teams        Team[]
+}
+
+model Participant {
+  MatchId         String
+  puuid           String
+  participantId    Int
+  championId            Int
+  teamId               Int
+  role                 Role
+  lane                 String
+  kills                Int
+  deaths              Int
+  assists             Int
+  goldEarned          Int
+  goldSpent           Int
+  totalDamageDealt    Int
+  totalDamageTaken    Int
+  wardsPlaced         Int
+  wardsKilled         Int
+
+  @@id([MatchId, puuid])
+  Player Player @relation(fields: [puuid], references: [puuid])
+  Match Match @relation(fields: [MatchId], references: [MatchId]) 
+  Team Team @relation(fields: [MatchId, teamId], references: [MatchId, teamId])
+}
+
+
+model Team {
+  
 }
 
 model Mastery {
