@@ -78,7 +78,16 @@ model Participant {
 
 
 model Team {
-  
+  teamId               Int
+  MatchId             String
+  teamPosition        String
+  win                 Boolean
+  firstBlood          Boolean
+  firstTower         Boolean
+  firstInhibitor      Boolean
+  firstBaron          Boolean
+  Match Match @relation(fields: [MatchId], references: [MatchId])
+
 }
 
 model Mastery {
