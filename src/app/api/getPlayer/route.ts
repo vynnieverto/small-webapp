@@ -5,7 +5,6 @@ import { get } from "http";
 // TODO: Figure out what to do if a player has no games played. Note: This means that the player has no mastery data, no match history, etc. 
 // Perhaps we should just return a 404 error?
 
-// TODO: Unit tests for this endpoint.
 // Note: One typescript error is caused by the APIKEY being string | undefined, which was causing typescript to throw errors. It shows itself in the requestHeaders variable. 
 const prisma = new PrismaClient();
 export async function POST(request: Request) {

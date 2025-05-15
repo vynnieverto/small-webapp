@@ -87,8 +87,12 @@ model Team {
   firstInhibitor      Boolean
   firstBaron          Boolean
   Match Match @relation(fields: [MatchId], references: [MatchId])
+  Participants Participant[]
+  Objectives Objective[]
 
 }
+
+
 
 model Mastery {
   championId            Int

@@ -1,0 +1,1 @@
+// This endpoint is meant to refresh the player data in the database.
