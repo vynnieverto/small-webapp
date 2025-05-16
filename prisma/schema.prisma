@@ -89,10 +89,19 @@ model Team {
   Match Match @relation(fields: [MatchId], references: [MatchId])
   Participants Participant[]
   Objectives Objective[]
-
+  @@id([MatchId, teamId])
 }
 
-
+model Objective {
+  MatchId             String
+  teamId               Int
+  type                ObjectiveType
+  kills               Int
+  timeAlive           Int
+  timeAlivePercent    Float
+  Team Team @relation(fields: [MatchId, teamId], references: [MatchId, teamId])
+  @@id([MatchId, teamId, type])
+}
 
 model Mastery {
   championId            Int
