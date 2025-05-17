@@ -14,8 +14,10 @@ export default async function GET(request: Request, {params}: {params: {player: 
         const [gameName, tagLine] = riotId.split('#');
         const player = await prisma.player.findUnique({
             where: {
-                gameName: gameName,
-                tagLine: tagLine,
+                gameName_tagLine: {
+                    gameName: gameName,
+                    tagLine: tagLine,
+                },
             },
         });
         if (!player) {
@@ -25,9 +27,9 @@ export default async function GET(request: Request, {params}: {params: {player: 
             });
         }
 
-        const findLast20Matches = await prisma.playerMatchHistory.findMany({
+        const findLast20Matches = await prisma.participant.findMany({
             where: {
-                playerId: player.id,
+                playerId: player.puuid,
             },
             orderBy: {
                 gameStartTime: 'desc',
@@ -35,6 +37,7 @@ export default async function GET(request: Request, {params}: {params: {player: 
             take: 20,
         });
         if (!findLast20Matches) {
+            const 
             
         }
 
