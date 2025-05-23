@@ -29,6 +29,20 @@ enum ObjectiveType {
   VOIDGRUBS
 }
 
+
+model User {
+  id        String @id @default(cuid())
+  username      String
+  email     String? @unique
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Role      String
+  Player    Player[]
+  
+}
+
+
 model Player {
   puuid       String @id
   gameName    String 
@@ -36,7 +50,10 @@ model Player {
   Participant Participant[]
   Region      String? 
   Mastery    Mastery[]
+  User        User? @relation(fields: [userId], references: [id])
+  userId      String?
   @@unique([gameName, tagLine])
+
 }
 
 // May need to make changes to this model
