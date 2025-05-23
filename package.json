@@ -11,6 +11,8 @@
   "dependencies": {
     "@prisma/client": "^6.7.0",
     "@prisma/studio": "^0.511.0",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.2.4",
     "prisma": "^6.7.0",
     "react": "^19.0.0",
@@ -18,6 +20,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
