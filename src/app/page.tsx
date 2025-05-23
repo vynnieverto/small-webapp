@@ -5,12 +5,16 @@ import Header from '@/components/Header/Header';
 
 
 export default function Home() {
-  return (
-    <main className="flex flex-col items-center justify-between p-24">
-      <Header />
-      <h1 className="text-4xl font-bold">Welcome to MyApp</h1>
-      <p className="mt-4 text-lg">This is a simple Next.js application.</p>
-    </main>
-    
-  )
+  const [selectedRegion, setSelectedRegion] = useState<string | null>('region');
+
+  const handlePlayerSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Selected Region:', selectedRegion);
+    try {
+      const queryParams = new URLSearchParams({
+        region: selectedRegion || '',
+      });
+      
+    }
+  }
 }
