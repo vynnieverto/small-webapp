@@ -14,6 +14,9 @@ export default function Home() {
       const queryParams = new URLSearchParams({
         region: selectedRegion || '',
       });
+
+      
+    } catch {
       
     }
   }
