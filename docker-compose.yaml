@@ -31,41 +31,6 @@ services:
       retries: 5
     networks:
       - my_network
-  # afsDatabase:
-  #   image: postgres:latest
-  #   container_name: afsDatabase
-  #   environment:
-  #     POSTGRES_USER: afs
-  #     POSTGRES_PASSWORD: afs
-  #     POSTGRES_DB: myafsdb
-  #   ports:
-  #     - "5433:5432"
-  #   volumes:
-  #     - afs_pg_data:/var/lib/postgresql/data   # ✅ separate volume
-  #   restart: always
-  #   healthcheck:
-  #     test: ["CMD", "pg_isready", "-U", "afs", "-d", "myafsdb"]
-  #     interval: 5s
-  #     retries: 5
-  #   networks:
-  #     - my_network
-  # afs:
-  #   image: localafs
-  #   container_name: localafs
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "50000:50000"
-  #   volumes:
-  #     - ./app:/app/app
-  #   environment:
-  #     - DATABASE_URL=postgresql://afs:afs@afsDatabase:5432/myafsdb
-  #   networks:
-  #     - my_network
-  #   depends_on:
-  #     afsDatabase:
-  #       condition: service_healthy
   app:
     image: afs
     build:
@@ -93,3 +58,5 @@ networks:
 volumes:
   pg_data:
   afs_pg_data:
+
+  #TODO: Doublecheck this later when I end up actually using docker-compose
