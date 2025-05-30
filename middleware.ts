@@ -21,6 +21,12 @@ export async function middleware(request: NextRequest) {
             if (!decoded) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
+            if (typeof decoded !== 'object' || !decoded.username) {
+                return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+            }
+            if (typeof decoded.username !== 'string') {
+                return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+            }
             const user = await prisma.user.findUnique({
                 where: {
                     username: decoded.username,
