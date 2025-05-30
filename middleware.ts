@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
             if (!decoded) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
-            if (typeof decoded !== 'object' || !decoded.username) {
+            if (typeof decoded !== 'object' || !decoded.username ) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
             if (typeof decoded.username !== 'string') {
@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
             }
 
-            if (user.role !== 'dev') {
+            if (user.Role !== 'dev') {
                 return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
             }
 
