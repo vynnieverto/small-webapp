@@ -11,7 +11,6 @@ export async function POST(request: Request) {
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
-    const validRegions = ['americas', 'asia', 'europe']
 
     
     try{
@@ -57,11 +56,6 @@ export async function POST(request: Request) {
                 status: 400,
                 headers: responseHeaders,
             });
-        } else if (!validRegions.includes(inputRegion)) {
-            return NextResponse.json({ error: 'Region is invalid'}, {
-                status: 400,
-                headers: responseHeaders,
-            });
         }
 
         
@@ -73,7 +67,9 @@ export async function POST(request: Request) {
                 gameName_tagLine: { 
                     gameName: inputGameName,
                     tagLine: inputTagLine,
-                }
+
+                },
+                Region: inputRegion,
             }
         });
         if (player) {
@@ -92,7 +88,7 @@ export async function POST(request: Request) {
             });
         }
         // Get URL from environment variables
-        const url = `https://${inputRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
+        const url = `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
 
         // Set up request options
         const requestOptions = {
@@ -174,6 +170,7 @@ export async function POST(request: Request) {
 // hopefully this isn't necessary
 // The main idea is to query the players match history and get the region from the match ID, since querying player information doesn't return the region
 
+// TODO: This function needs to change. 
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
     const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
