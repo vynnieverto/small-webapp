@@ -1,12 +1,13 @@
 import {NextResponse} from 'next/server';
 import {PrismaClient} from '@prisma/client';
+import {validRegions} from '@/lib/regions';
 
 const prisma = new PrismaClient();
 
 // Will need to test this endpoint with a player that has never played a game before. 
 // This endpoint should be used to get the mastery data for a player, or to store the mastery data for a player in the database. 
 // It should not be used to update the mastery data for a player. That should be done in the /refresh endpoint.
-const validRegions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'me1', 'na1', 'oc1', 'ru', 'sg2', 'tr1', 'tw2', 'vn2'];
+
 
 export async function GET(request: Request, {params}: {params: {region: string, player: string}}) {
     const responseHeaders = {
