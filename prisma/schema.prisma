@@ -53,7 +53,7 @@ model Player {
   Mastery    Mastery[]
   User        User? @relation(fields: [userId], references: [id])
   userId      String?
-  @@unique([gameName, tagLine, Region])
+  @@unique([gameName, tagLine])
 
 }
 
