@@ -5,6 +5,8 @@ import { get } from "http";
 // TODO: Figure out what to do if a player has no games played. Note: This means that the player has no mastery data, no match history, etc. 
 // Perhaps we should just return a 404 error?
 
+// Note: gameName and tagLine are unique across regions. (at least they should be)
+
 // Note: One typescript error is caused by the APIKEY being string | undefined, which was causing typescript to throw errors. It shows itself in the requestHeaders variable. 
 const prisma = new PrismaClient();
 export async function POST(request: Request) {
@@ -16,16 +18,16 @@ export async function POST(request: Request) {
     try{
         
         const body = await request.json();
+        // Extract gameName, tagLine from the request body
         const inputGameName = body.gameName;
         const inputTagLine = body.tagLine;
-        const inputRegion = body.region;
 
         const apiKey = process.env.RIOT_API_KEY;
 
 
 
         // check if the input is valid. 
-        // Note: How much should I care about sql injection?
+        // Note: How much should I care about malicious actors?
         if (!inputGameName || !inputTagLine) {
             return NextResponse.json({ error: 'Game name and player name are required'}, {
                 status: 400,
@@ -51,25 +53,23 @@ export async function POST(request: Request) {
             });
         }
 
-        if (!inputRegion || typeof inputRegion !== 'string') {
-            return NextResponse.json({ error: 'Region is required and must be a string'}, {
-                status: 400,
-                headers: responseHeaders,
-            });
-        }
+        // if (!inputRegion || typeof inputRegion !== 'string') {
+        //     return NextResponse.json({ error: 'Region is required and must be a string'}, {
+        //         status: 400,
+        //         headers: responseHeaders,
+        //     });
+        // }
 
         
 
         // Check if the player exists in the database, and if so, return that player's data
         const player = await prisma.player.findUnique({
             where: {
-                // This is neccessary for compound unique keys in Prisma
+                // This is neccessary for compound unique keys in Prisma. 
                 gameName_tagLine: { 
                     gameName: inputGameName,
                     tagLine: inputTagLine,
-
                 },
-                Region: inputRegion,
             }
         });
         if (player) {
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
             });
         }
     
-        // Sanity check for api key variable. Shouldn't be necessary, but just in case.
+        // Sanity check for api key variable.
         if (!apiKey) {
             console.error('API key is missing');
             return new Response(JSON.stringify({ error: 'API key is missing' }), {
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
         let playerId = apiResponseData.puuid;
         let playerName = apiResponseData.gameName;
         let playerTagLine = apiResponseData.tagLine;
-        let playerRegion = await getPlayerRegion(playerId, inputRegion);
+        let playerRegion = await getPlayerRegion(playerId, 'americas');
         
 
         // TODO: There could be a better way to do this. Will come back to this later.
@@ -153,7 +153,6 @@ export async function POST(request: Request) {
             } ;
         }
         // Return RIOT API response: PUIID, GameName, TagLine
-        // Note: The region is not returned from the API, so we need to get it from the match history.
 
     }
     catch (error){
@@ -167,10 +166,12 @@ export async function POST(request: Request) {
 }
 
 
-// hopefully this isn't necessary
-// The main idea is to query the players match history and get the region from the match ID, since querying player information doesn't return the region
+// The main idea is to query the players match history and get the region from the match ID, 
+// since querying player information doesn't return the region
 
-// TODO: This function needs to change. 
+// This function should suffice unless the player has no match history, in which case we will return null.
+
+// Note: the hemisphere used is the NA hemisphere, as it is the closest one to me. 
 async function getPlayerRegion(playerId: string, hemisphere: string){
     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
     const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;

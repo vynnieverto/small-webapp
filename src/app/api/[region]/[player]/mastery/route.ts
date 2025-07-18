@@ -12,6 +12,7 @@ export async function GET(request: Request, {params}: {params: {player: string}}
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
+    // list of exisiting regions
     const validRegions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'me1', 'na1', 'oc1', 'ru', 'sg2', 'tr1', 'tw2', 'vn2'];
     try{
         // Get the player ID from the request parameters
