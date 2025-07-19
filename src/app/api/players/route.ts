@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { validRegions } from '@/lib/regions';
 
-const prisma 
+const prisma = new PrismaClient();
 // this end
 
 export default async function GET(request: NextRequest) {
@@ -23,10 +23,30 @@ export default async function GET(request: NextRequest) {
     if (gameName === '') {
         return NextResponse.json({ suggestions: [] });
     }
-
+    // SQLite does not support case sensitive search apparently?
     try {
-        
+        const players = await prisma.player.findMany({
+            where: {
+                Region: region,
+                gameName: {
+                    contains: gameName,
+                },
+
+            },
+            take: limit,
+            orderBy: {
+                gameName: 'asc',
+            },
+        });
+
+        const suggestions = players.map(player => `${player.gameName}#${player.tagLine}`);
+        return NextResponse.json({ suggestions }, { status: 200 });
+
+    } catch (error) {
+        console.error('Database query error:', error);
+        return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
+
 
 
 
