@@ -5,7 +5,7 @@ import { validRegions } from '@/lib/regions';
 const prisma = new PrismaClient();
 // this end
 
-export default async function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
     const url = request.nextUrl;
     const region = url.searchParams.get('region');
     const gameName = url.searchParams.get('gameName')?.trim();
@@ -46,8 +46,4 @@ export default async function GET(request: NextRequest) {
         console.error('Database query error:', error);
         return NextResponse.json({ error: 'Database query failed' }, { status: 500 });
     }
-
-
-
-
 }

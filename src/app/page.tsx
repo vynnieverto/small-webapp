@@ -41,6 +41,9 @@ export default function MainSearchPage() {
         body: JSON.stringify({ name, region }),
       })
     }
+    catch (error) {      console.error('Error fetching player data:', error);
+      alert('An error occurred while searching for the player. Please try again later.');
+    }
     
   }
   return (

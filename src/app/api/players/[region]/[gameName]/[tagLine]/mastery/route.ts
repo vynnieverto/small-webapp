@@ -8,8 +8,15 @@ const prisma = new PrismaClient();
 // This endpoint should be used to get the mastery data for a player, or to store the mastery data for a player in the database. 
 // It should not be used to update the mastery data for a player. That should be done in the /refresh endpoint.
 
+type RouteContext = {
+  params: Promise<{
+    region: string;
+    gameName: string;
+    tagLine: string;
+  }>;
+};
 
-export async function GET(request: Request, {params}: {params: {region: string, player: string}}) {
+export async function GET(request: Request, {params}: RouteContext) {
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
     };
@@ -17,8 +24,7 @@ export async function GET(request: Request, {params}: {params: {region: string, 
 
     try{
         // Get the player ID from the request parameters
-        let { region, player } = params;
-        const [gameName, tagLine] = player.split('-');
+        const { region, gameName, tagLine } = await params;
         console.log('Region:', region);
         console.log('Game name:', gameName);
         console.log('Tag line:', tagLine);

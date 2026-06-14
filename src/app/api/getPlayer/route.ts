@@ -116,10 +116,13 @@ export async function POST(request: Request) {
 
         // TODO: There could be a better way to do this. Will come back to this later.
         if (!playerRegion) {
-            return NextResponse.json({ error: 'Failed to fetch player region' }, {
-                status: 500,
-                headers: responseHeaders,
-            });
+            return NextResponse.json(
+                { error: 'Failed to fetch player region' }, 
+                {
+                    status: 500,
+                    headers: responseHeaders,
+                }
+            );
         }
 
 
@@ -136,10 +139,11 @@ export async function POST(request: Request) {
             })
         // Check if the player was created successfully
             if (!newPlayer) {
-                return NextResponse.json({ error: 'Failed to create player in the database' }), {
+                return NextResponse.json({ error: 'Failed to create player in the database' }, {
                     status: 500,
                     headers: responseHeaders,
-                };
+                }
+                );
             }
             console.log('Player created:', newPlayer);
             return NextResponse.json({playerData: newPlayer}, {
@@ -147,10 +151,11 @@ export async function POST(request: Request) {
 
         } catch (error) {
             console.error('Error creating player:', error);
-            return NextResponse.json({ error: 'Failed to create player in the database' }), {
+            return NextResponse.json({ error: 'Failed to create player in the database' }, {
                 status: 500,
                 headers: responseHeaders,
-            } ;
+            } 
+            );
         }
         // Return RIOT API response: PUIID, GameName, TagLine
 
