@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {PrismaClient} from '@prisma/client';
-import {validRegions} from '@/lib/regions';
+import {isValidPlatform} from '@/lib/regions';
 
 // const prisma = new PrismaClient();
 import prisma from "@/lib/prisma";
@@ -66,7 +66,7 @@ export async function GET(request: Request, {params}: RouteContext) {
             // If no mastery data is found, attempt to fetch it from the API
             const apiKey = process.env.RIOT_API_KEY!;
             const region = playerData.Region;
-            if (!region || !validRegions.includes(region)) {
+            if (!region || !isValidPlatform(region)) {
                 return NextResponse.json({ error: 'Invalid region' }, {
                     status: 400,
                     headers: responseHeaders,

@@ -2,46 +2,56 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
-
-const regions = [
-  'region',
-  'na1',
-  'euw1',
-  'eun1',
-  'kr',
-  'br1',
-  'jp1',
-  'la1',
-  'la2',
-  'oc1',
-  'tr1',
-  'ru',
-];
-
+import { validPlatforms, type Platform } from '@/lib/regions';
 export default function MainSearchPage() {
-  const [region, setRegion] = useState<string>('region');
+  const [p, setPlatform] = useState<Platform | 'region'>('region');
   const [name, setName] = useState<string>('');
 
 
 
   const handlePlayerSearch = async (e: React.FormEvent) => {
-    if (region === 'region' || name.trim() === '') {
+    // if (platform === 'region' || name.trim() === '') {
+    //   alert('Please select a region and enter a name.');
+    //   return;
+    // }
+    e.preventDefault();
+
+    const riotId = name.trim();
+    if (!p || !riotId) {
       alert('Please select a region and enter a name.');
       return;
     }
-    e.preventDefault();
-    console.log('searching for player: ', name, 'in region:', region);
 
+    console.log('searching for player: ', name, 'in region:', p);
+
+    // I want to change this later since op.gg does some shenannigans with autofilling a particular tagline by default
+    const hashIndex = riotId.lastIndexOf('#');
+    if (hashIndex <= 0 || hashIndex === riotId.length - 1) {
+      alert('enter in format of gameName#tagline');
+      return;
+    }
+
+    const gameName = riotId.slice(0, hashIndex);
+    const tagLine = riotId.slice(hashIndex + 1);
     try {
       const response  = await fetch('/api/getPlayer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, region }),
+        body: JSON.stringify({ gameName, tagLine, platform: p }),
       })
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error ?? 'lookup failed');
+        return;
+      }
+
+      console.log('Player data:', data);
     }
-    catch (error) {      console.error('Error fetching player data:', error);
+    catch (error) {console.error('Error fetching player data:', error);
       alert('An error occurred while searching for the player. Please try again later.');
     }
     
@@ -57,17 +67,17 @@ export default function MainSearchPage() {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Enter a name"
+        placeholder="Game name + #tagline (e.g., RocketEscape#GLHF)"
         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
       />
 
       <select
-        value={region}
-        onChange={(e) => setRegion(e.target.value)}
+        value={p}
+        onChange={(e) => setPlatform(e.target.value as Platform)}
         className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-white"
       >
-        {regions.map((r) => (
-          <option key={r} value={r}>{r}</option>
+        {validPlatforms.map((p) => (
+          <option key={p} value={p}>{p}</option>
         ))}
       </select>
 

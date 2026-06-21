@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {PrismaClient} from '@prisma/client';
 import { get } from "http";
+import { isValidPlatform, getRegionalRoute } from "@/lib/regions";
 
 // TODO: Figure out what to do if a player has no games played. Note: This means that the player has no mastery data, no match history, etc. 
 // Perhaps we should just return a 404 error?
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
         // Extract gameName, tagLine from the request body
         const inputGameName = body.gameName;
         const inputTagLine = body.tagLine;
+        const inputPlatform = body.platform;
 
         const apiKey = process.env.RIOT_API_KEY;
 
@@ -29,12 +31,19 @@ export async function POST(request: Request) {
 
         // check if the input is valid. 
         // Note: How much should I care about malicious actors?
-        if (!inputGameName || !inputTagLine) {
-            return NextResponse.json({ error: 'Game name and player name are required'}, {
+        if (!inputGameName || !inputTagLine || !inputPlatform) {
+            return NextResponse.json({ error: 'Game name, player name, and platform are required'}, {
                 status: 400,
                 headers: responseHeaders,
             });
         }
+        if (typeof inputPlatform !== 'string' || !isValidPlatform(inputPlatform)) {
+            return NextResponse.json({ error: 'Invalid platform'}, {
+                status: 400,
+                headers: responseHeaders,
+            });
+        }
+
         else if (typeof inputGameName !== 'string' || typeof inputTagLine !== 'string') {
             return NextResponse.json({ error: 'Game name and player name must be strings'}, {
                 status: 400,
@@ -54,13 +63,8 @@ export async function POST(request: Request) {
             });
         }
 
-        // if (!inputRegion || typeof inputRegion !== 'string') {
-        //     return NextResponse.json({ error: 'Region is required and must be a string'}, {
-        //         status: 400,
-        //         headers: responseHeaders,
-        //     });
-        // }
 
+        const regionalRoute = getRegionalRoute(inputPlatform);
         
 
         // Check if the player exists in the database, and if so, return that player's data
@@ -89,7 +93,7 @@ export async function POST(request: Request) {
             });
         }
         // Get URL from environment variables
-        const url = `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
+        const url = `https://${regionalRoute}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
 
         // Set up request options
         const requestOptions = {
@@ -112,19 +116,19 @@ export async function POST(request: Request) {
         let playerId = apiResponseData.puuid;
         let playerName = apiResponseData.gameName;
         let playerTagLine = apiResponseData.tagLine;
-        let playerRegion = await getPlayerRegion(playerId, 'americas');
+
         
 
         // TODO: There could be a better way to do this. Will come back to this later.
-        if (!playerRegion) {
-            return NextResponse.json(
-                { error: 'Failed to fetch player region' }, 
-                {
-                    status: 500,
-                    headers: responseHeaders,
-                }
-            );
-        }
+        // if (!playerRegion) {
+        //     return NextResponse.json(
+        //         { error: 'Failed to fetch player region' }, 
+        //         {
+        //             status: 500,
+        //             headers: responseHeaders,
+        //         }
+        //     );
+        // }
 
 
         // Attempt to create a new player in the database
@@ -134,7 +138,7 @@ export async function POST(request: Request) {
                     puuid: playerId,
                     gameName: playerName,
                     tagLine: playerTagLine,
-                    Region: playerRegion,
+                    Region: inputPlatform,
                 },
 
             })
@@ -178,35 +182,35 @@ export async function POST(request: Request) {
 // This function should suffice unless the player has no match history, in which case we will return null.
 
 // Note: the hemisphere used is the NA hemisphere, as it is the closest one to me. 
-async function getPlayerRegion(playerId: string, hemisphere: string){
-    // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
-    const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
-    let apiKey = process.env.RIOT_API_KEY!;
-    const requestOptions = {
-        method: 'GET',
-        headers: {
-            'X-Riot-Token': apiKey,
-            'Content-Type': 'application/json',
-        },
-    };
-    try {
-        const apiResponse = await fetch(url, requestOptions);
-        if (!apiResponse.ok){
-            return null;
-        }
-        const apiResponseData = await apiResponse.json();
+// async function getPlayerRegion(playerId: string, hemisphere: string){
+//     // const regions = ['br1', 'eun1', 'euw1', 'jp1', 'kr', 'la1', 'la2', 'na1', 'oc1', 'tr1', 'ru', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'];
+//     const url = `https://${hemisphere}.api.riotgames.com/lol/match/v5/matches/by-puuid/${playerId}/ids?start=0&count=1`;
+//     let apiKey = process.env.RIOT_API_KEY!;
+//     const requestOptions = {
+//         method: 'GET',
+//         headers: {
+//             'X-Riot-Token': apiKey,
+//             'Content-Type': 'application/json',
+//         },
+//     };
+//     try {
+//         const apiResponse = await fetch(url, requestOptions);
+//         if (!apiResponse.ok){
+//             return null;
+//         }
+//         const apiResponseData = await apiResponse.json();
 
-        if (!apiResponseData || apiResponseData.length === 0) {
-            return null;
-        }
-        const matchId = apiResponseData[0];
-        const region = matchId.split('_')[0];
-        return region.toLowerCase();
+//         if (!apiResponseData || apiResponseData.length === 0) {
+//             return null;
+//         }
+//         const matchId = apiResponseData[0];
+//         const region = matchId.split('_')[0];
+//         return region.toLowerCase();
         
-    } catch (error) {
-        console.error('Error fetching player region:', error);
-        return null;
-    }
+//     } catch (error) {
+//         console.error('Error fetching player region:', error);
+//         return null;
+//     }
 
 
-}
+// }
