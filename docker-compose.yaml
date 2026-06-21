@@ -41,13 +41,9 @@ services:
     volumes:
       - ./src:/app/src
       - small-webapp-data:/app/data
+    env_file:
+      - .env.docker
 
-    environment:
-      - DATABASE_URL=file:./app/data/dev.db
-      - BASE_API_URL=https://advanced-flights-system.replit.app
-      - API_KEY=54d3070aa9328a1dd7b7b4455e86a330038c289dafc7fda985777b8030079b01
-      - ACCESS_TOKEN_SECRET=9afdadec778f9f450187295121c531e25b6ee7a8f553386bbeda685abca64355
-      - REFRESH_TOKEN_SECRET=9afdadec778f9f450187295121c531e25b6ee7a8f553386bbeda685abca64355
     networks:
       - my_network
     # depends_on:
