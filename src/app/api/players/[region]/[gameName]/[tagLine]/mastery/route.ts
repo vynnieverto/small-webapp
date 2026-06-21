@@ -2,7 +2,8 @@ import {NextResponse} from 'next/server';
 import {PrismaClient} from '@prisma/client';
 import {validRegions} from '@/lib/regions';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 // Will need to test this endpoint with a player that has never played a game before. 
 // This endpoint should be used to get the mastery data for a player, or to store the mastery data for a player in the database. 

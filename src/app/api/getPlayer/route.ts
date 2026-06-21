@@ -8,7 +8,8 @@ import { get } from "http";
 // Note: gameName and tagLine are unique across regions. (at least they should be)
 
 // Note: One typescript error is caused by the APIKEY being string | undefined, which was causing typescript to throw errors. It shows itself in the requestHeaders variable. 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 export async function POST(request: Request) {
     const responseHeaders = {
         'Access-Control-Allow-Origin': '*',
