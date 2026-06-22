@@ -9,7 +9,7 @@ import prisma from "@/lib/prisma";
 export async function fetchOrCreatePlayer(body: unknown) {
     if (typeof body !== 'object' || body === null) {
         return {
-            status: 400,
+            status: 500,
             body: { error: 'Invalid request body' },
         };
     }
@@ -26,9 +26,6 @@ export async function fetchOrCreatePlayer(body: unknown) {
             body: { error: 'Game name, tag line, and platform must be strings' },
         };
     }
-    const responseHeaders = {
-        'Access-Control-Allow-Origin': '*',
-    };
     try{
         
         const inputGameName = gameName.trim();
@@ -46,18 +43,6 @@ export async function fetchOrCreatePlayer(body: unknown) {
                 body: { error: 'Game name, player name, and platform are required'},
             };
         }
-        // if (typeof inputPlatform !== 'string' || !isValidPlatform(inputPlatform)) {
-        //     return {
-        //         status: 400,
-        //         body: { error: 'invalid platform'},
-        //     };
-        // }
-
-        // else if (typeof inputGameName !== 'string' || typeof inputTagLine !== 'string') {
-        //     return NextResponse.json({ error: 'Game name and player name must be strings'}, {
-        //         status: 400,
-        //     });
-        // }
         else if (inputGameName.length < 3 || inputGameName.length > 16) {
             return {
                 status: 400,
@@ -77,7 +62,7 @@ export async function fetchOrCreatePlayer(body: unknown) {
                 body: { error: 'Invalid platform' },
             };
         }
-        
+
         const regionalRoute = getRegionalRoute(inputPlatform);
         
 
@@ -124,16 +109,21 @@ export async function fetchOrCreatePlayer(body: unknown) {
         const apiResponse = await fetch(url, requestOptions); 
         if (!apiResponse.ok) {
             return {
-                status: 400,
+                status: apiResponse.status,
                 body: { error: 'failed to fetch data from external api'},
             };
         }
         const apiResponseData = await apiResponse.json();
-        let playerId = apiResponseData.puuid;
-        let playerName = apiResponseData.gameName;
-        let playerTagLine = apiResponseData.tagLine;
+        const playerId = apiResponseData.puuid;
+        const playerName = apiResponseData.gameName;
+        const playerTagLine = apiResponseData.tagLine;
 
-        
+        if (typeof playerId !== 'string' || typeof playerName !== 'string' || typeof playerTagLine !== 'string') {
+            return {
+                status: 502,
+                body: { error: 'Riot returned invalid account data' },
+            };
+        }
 
 
 
@@ -154,7 +144,6 @@ export async function fetchOrCreatePlayer(body: unknown) {
                     status: 500,
                     body: { error: 'Failed to create player in the database' },
                 }
-                
             }
             console.log('Player created:', newPlayer);
             return {

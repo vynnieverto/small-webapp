@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import { validPlatforms, type Platform } from '@/lib/regions';
 export default function MainSearchPage() {
-  const [p, setPlatform] = useState<Platform | 'region'>('region');
+  const [platform, setPlatform] = useState<Platform | ''>('');
   const [name, setName] = useState<string>('');
 
 
@@ -17,12 +17,12 @@ export default function MainSearchPage() {
     e.preventDefault();
 
     const riotId = name.trim();
-    if (!p || !riotId) {
+    if (!platform || !riotId) {
       alert('Please select a region and enter a name.');
       return;
     }
 
-    console.log('searching for player: ', name, 'in region:', p);
+    console.log('searching for player: ', name, 'in region:', platform);
 
     // I want to change this later since op.gg does some shenannigans with autofilling a particular tagline by default
     const hashIndex = riotId.lastIndexOf('#');
@@ -39,7 +39,7 @@ export default function MainSearchPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ gameName, tagLine, platform: p }),
+        body: JSON.stringify({ gameName, tagLine, platform: platform}),
       })
 
       const data = await response.json();
@@ -72,12 +72,12 @@ export default function MainSearchPage() {
       />
 
       <select
-        value={p}
+        value={platform}
         onChange={(e) => setPlatform(e.target.value as Platform)}
         className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:text-white"
       >
-        {validPlatforms.map((p) => (
-          <option key={p} value={p}>{p}</option>
+        {validPlatforms.map((platform) => (
+          <option key={platform} value={platform}>{platform}</option>
         ))}
       </select>
 
