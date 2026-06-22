@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { isValidPlatform, getRegionalRoute } from "@/lib/regions";
 
 
@@ -8,14 +7,10 @@ import { isValidPlatform, getRegionalRoute } from "@/lib/regions";
 // const prisma = new PrismaClient();
 import prisma from "@/lib/prisma";
 export async function fetchOrCreatePlayer(body: unknown) {
-    const responseHeaders = {
-        'Access-Control-Allow-Origin': '*',
-    };
     if (typeof body !== 'object' || body === null) {
         return {
             status: 400,
             body: { error: 'Invalid request body' },
-            headers: responseHeaders,
         };
     }
         
@@ -29,9 +24,11 @@ export async function fetchOrCreatePlayer(body: unknown) {
         return {
             status: 400,
             body: { error: 'Game name, tag line, and platform must be strings' },
-            headers: responseHeaders,
         };
     }
+    const responseHeaders = {
+        'Access-Control-Allow-Origin': '*',
+    };
     try{
         
         const inputGameName = gameName.trim();
@@ -44,38 +41,43 @@ export async function fetchOrCreatePlayer(body: unknown) {
         // check if the input is valid. 
         // Note: How much should I care about malicious actors?
         if (!inputGameName || !inputTagLine || !inputPlatform) {
-            return NextResponse.json({ error: 'Game name, player name, and platform are required'}, {
+            return {
                 status: 400,
-                headers: responseHeaders,
-            });
+                body: { error: 'Game name, player name, and platform are required'},
+            };
         }
-        if (typeof inputPlatform !== 'string' || !isValidPlatform(inputPlatform)) {
-            return NextResponse.json({ error: 'Invalid platform'}, {
-                status: 400,
-                headers: responseHeaders,
-            });
-        }
+        // if (typeof inputPlatform !== 'string' || !isValidPlatform(inputPlatform)) {
+        //     return {
+        //         status: 400,
+        //         body: { error: 'invalid platform'},
+        //     };
+        // }
 
-        else if (typeof inputGameName !== 'string' || typeof inputTagLine !== 'string') {
-            return NextResponse.json({ error: 'Game name and player name must be strings'}, {
-                status: 400,
-                headers: responseHeaders,
-            });
-        }
+        // else if (typeof inputGameName !== 'string' || typeof inputTagLine !== 'string') {
+        //     return NextResponse.json({ error: 'Game name and player name must be strings'}, {
+        //         status: 400,
+        //     });
+        // }
         else if (inputGameName.length < 3 || inputGameName.length > 16) {
-            return NextResponse.json({ error: 'Game name must be between 3 and 16 characters'}, {
+            return {
                 status: 400,
-                headers: responseHeaders,
-            });
+                body: { error: 'Game name must be between 3 and 16 characters'},
+            };
         }
         else if (inputTagLine.length < 3 || inputTagLine.length > 5) {
-            return NextResponse.json({ error: 'Tag line must be between 3 and 5 characters'}, {
+            return {
                 status: 400,
-                headers: responseHeaders,
-            });
+                body: { error: 'Tag line must be between 3 and 5 characters' },
+            };
         }
 
-
+        if (!isValidPlatform(inputPlatform)) {
+            return {
+                status: 400,
+                body: { error: 'Invalid platform' },
+            };
+        }
+        
         const regionalRoute = getRegionalRoute(inputPlatform);
         
 
@@ -90,22 +92,24 @@ export async function fetchOrCreatePlayer(body: unknown) {
             }
         });
         if (player) {
-            return NextResponse.json({playerData: player}, {
+            return {
                 status: 200,
-                headers: responseHeaders,
-            });
+                body: {playerData: player},
+            };
         }
     
         // Sanity check for api key variable.
         if (!apiKey) {
             console.error('API key is missing');
-            return new Response(JSON.stringify({ error: 'API key is missing' }), {
+            return {
                 status: 500,
-                headers: responseHeaders,
-            });
+                body: { error: 'API key is missing' },
+            };
         }
+        const encodedGameName = encodeURIComponent(inputGameName);
+        const encodedTagLine = encodeURIComponent(inputTagLine);
         // Get URL from environment variables
-        const url = `https://${regionalRoute}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${inputGameName}/${inputTagLine}`;
+        const url = `https://${regionalRoute}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodedGameName}/${encodedTagLine}`;
 
         // Set up request options
         const requestOptions = {
@@ -119,10 +123,10 @@ export async function fetchOrCreatePlayer(body: unknown) {
         // Send request to Riot API
         const apiResponse = await fetch(url, requestOptions); 
         if (!apiResponse.ok) {
-            return new Response(JSON.stringify({ error: 'Failed to fetch data from the external API' }), {
-                status: apiResponse.status,
-                headers: responseHeaders,
-            });
+            return {
+                status: 400,
+                body: { error: 'failed to fetch data from external api'},
+            };
         }
         const apiResponseData = await apiResponse.json();
         let playerId = apiResponseData.puuid;
@@ -131,16 +135,6 @@ export async function fetchOrCreatePlayer(body: unknown) {
 
         
 
-        // TODO: There could be a better way to do this. Will come back to this later.
-        // if (!playerRegion) {
-        //     return NextResponse.json(
-        //         { error: 'Failed to fetch player region' }, 
-        //         {
-        //             status: 500,
-        //             headers: responseHeaders,
-        //         }
-        //     );
-        // }
 
 
         // Attempt to create a new player in the database
@@ -156,33 +150,34 @@ export async function fetchOrCreatePlayer(body: unknown) {
             })
         // Check if the player was created successfully
             if (!newPlayer) {
-                return NextResponse.json({ error: 'Failed to create player in the database' }, {
+                return { 
                     status: 500,
-                    headers: responseHeaders,
+                    body: { error: 'Failed to create player in the database' },
                 }
-                );
+                
             }
             console.log('Player created:', newPlayer);
-            return NextResponse.json({playerData: newPlayer}, {
-                status: 200});
+            return {
+                status: 200,
+                body: {playerData: newPlayer},
+            };
 
         } catch (error) {
             console.error('Error creating player:', error);
-            return NextResponse.json({ error: 'Failed to create player in the database' }, {
+            return {
                 status: 500,
-                headers: responseHeaders,
-            } 
-            );
+                body: { error: 'error creating player'},
+            };
         }
         // Return RIOT API response: PUIID, GameName, TagLine
 
     }
     catch (error){
         console.error('Error:', error);
-        return NextResponse.json({ error: 'An error occurred while processing the request' }, {
-            status: 500,
-            headers: responseHeaders,
-        });
+            return {
+                status: 500,
+                body: { error: 'error occurred while processing the request'},
+            };
     }
 
 }
