@@ -49,11 +49,11 @@ model Player {
   gameName    String 
   tagLine         String
   Participant Participant[]
-  Region      String? 
+  Region      String 
   Mastery    Mastery[]
   User        User? @relation(fields: [userId], references: [id])
   userId      String?
-  @@unique([gameName, tagLine])
+  @@unique([gameName, tagLine, Region])
 
 }
 
