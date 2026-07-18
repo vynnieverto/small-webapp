@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { isValidPlatform } from '@/lib/regions';
 
 // const prisma = new PrismaClient();

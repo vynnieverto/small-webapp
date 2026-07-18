@@ -31,8 +31,7 @@ const platformToRegionalRoute: Record<Platform, string> = {
 }
 
 export function isValidPlatform(value: string): value is Platform {
-  const lowerValue = value.toLowerCase()
-  return validPlatforms.includes(lowerValue as Platform);
+  return validPlatforms.includes(value as Platform);
 }
 
 export function getRegionalRoute(platform: Platform): string {

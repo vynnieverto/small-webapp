@@ -1,16 +1,14 @@
 import { isValidPlatform, getRegionalRoute } from "@/lib/regions";
 
 
-// Note: gameName and tagLine are unique across regions. (at least they should be)
 
 // Note: One typescript error is caused by the APIKEY being string | undefined, which was causing typescript to throw errors. It shows itself in the requestHeaders variable. 
 // const prisma = new PrismaClient();
 import prisma from "@/lib/prisma";
-import { url } from "inspector/promises";
 export async function fetchOrCreatePlayer(body: unknown) {
     if (typeof body !== 'object' || body === null) {
         return {
-            status: 500,
+            status: 400,
             body: { error: 'Invalid request body' },
         };
     }
@@ -31,7 +29,7 @@ export async function fetchOrCreatePlayer(body: unknown) {
         
         const inputGameName = gameName.trim();
         const inputTagLine = tagLine.trim();
-        const inputPlatform = platform.trim();
+        const inputPlatform = platform.trim().toLowerCase();
 
         const apiKey = process.env.RIOT_API_KEY;
 
@@ -93,10 +91,9 @@ export async function fetchOrCreatePlayer(body: unknown) {
                 body: { error: 'API key is missing' },
             };
         }
-        const encodedGameName = encodeURIComponent(inputGameName);
-        const encodedTagLine = encodeURIComponent(inputTagLine);
+
         // Get URL from environment variables
-        const puuid_url = `https://${regionalRoute}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodedGameName}/${encodedTagLine}`;
+        const puuid_url = `https://${regionalRoute}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(inputGameName)}/${encodeURIComponent(inputTagLine)}`;
 
         // Set up request options
         const requestOptions = {
@@ -126,18 +123,26 @@ export async function fetchOrCreatePlayer(body: unknown) {
                 body: { error: 'Riot returned invalid account data' },
             };
         }
+        // platform membership check
+        const platform_url = `https://${inputPlatform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${encodeURIComponent(playerId)}`;
+        const platformResponse = await fetch(platform_url, requestOptions);
 
-        const platform_url = `https://${inputPlatform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${playerId}`;
-        const platformResponse = await fetch(platform_url);
-        
-        const platformData = await platformResponse.json();
+
+
+        if (platformResponse.status === 404) {
+            console.error('player not found in: ', inputPlatform);
+            return {
+                status: platformResponse.status,
+                body: { error: 'player was not found on ' + inputPlatform },
+            };
+        }
         if (!platformResponse.ok) {
-            console.error('Failed to fetch data from platform-specific API:', platformData);
             return {
                 status: platformResponse.status,
                 body: { error: 'failed to fetch data from platform-specific api' },
             };
         }
+
 
 
         // Attempt to create a new player in the database

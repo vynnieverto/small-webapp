@@ -2,47 +2,46 @@ import prisma from "@/lib/prisma";
 import { isValidPlatform } from '@/lib/regions';
 
 
-export async function getPlayerProfile(params: {gameName: string, tagLine: string, platform: string }) {
-    const {gameName, tagLine, platform} = params
+export async function getPlayerProfile(params: {gameName: string, tagLine: string, region: string }) {
+    const {gameName, tagLine, region} = params
 
-    if (typeof gameName !== 'string' || typeof tagLine !== 'string' || typeof platform !== 'string') {
+    if (typeof gameName !== 'string' || typeof tagLine !== 'string' || typeof region !== 'string') {
         return {
             status: 400,
             body: { error: 'Game name, tag line, and platform must be strings' },
         };
     }
+    const inputGameName = gameName.trim()
+    const inputTagLine = tagLine.trim()
+    const inputPlatform = region.trim().toLowerCase()
 
-    if (!gameName || !tagLine || !platform){
+    if (!gameName || !tagLine || !region){
         return {
             status: 400,
             body: { error: 'Game name, player name, and platform are required'},
         };
     }
+    if (inputGameName.length < 3 || inputGameName.length > 16) {
+        return {
+            status: 400,
+            body: { error: 'Game name must be between 3 and 16 characters'},
+        };
+    }
+    else if (inputTagLine.length < 3 || inputTagLine.length > 5) {
+        return {
+            status: 400,
+            body: { error: 'Tag line must be between 3 and 5 characters' },
+        };
+    }
+
+    if (!isValidPlatform(inputPlatform)) {
+        return {
+            status: 400,
+            body: { error: 'Invalid platform' },
+        };
+    }
 
     try{
-        const inputGameName = gameName.trim()
-        const inputTagLine = tagLine.trim()
-        const inputPlatform = platform.trim()
-
-        if (inputGameName.length < 3 || inputGameName.length > 16) {
-            return {
-                status: 400,
-                body: { error: 'Game name must be between 3 and 16 characters'},
-            };
-        }
-        else if (inputTagLine.length < 3 || inputTagLine.length > 5) {
-            return {
-                status: 400,
-                body: { error: 'Tag line must be between 3 and 5 characters' },
-            };
-        }
-
-        if (!isValidPlatform(inputPlatform)) {
-            return {
-                status: 400,
-                body: { error: 'Invalid platform' },
-            };
-        }
 
         const player = await prisma.player.findUnique({
             where: {
